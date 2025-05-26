@@ -18,6 +18,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -55,8 +56,8 @@ fun mostrarRutinaDiaria(
     // Obtener los tiempos guardados en PantallaTiempo
     val tiempoEjercicio = navController.previousBackStackEntry?.savedStateHandle?.get<Int>("tiempoEjercicio") ?: 30
     val tiempoDescanso = navController.previousBackStackEntry?.savedStateHandle?.get<Int>("tiempoDescanso") ?: 30
-
-    Box(modifier = Modifier.fillMaxSize()) {
+    val gradientColors = listOf(Color(0xFFB0BEC5), Color(0xFFECEFF1))
+    Box(modifier = Modifier.fillMaxSize().background(Brush.verticalGradient(gradientColors))) {
         // Título
         Column(
             modifier = Modifier

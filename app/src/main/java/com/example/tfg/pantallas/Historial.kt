@@ -1,3 +1,4 @@
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -7,6 +8,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -68,6 +70,7 @@ fun formatearTiempoHHMMSS(segundos: Int): String {
 fun mostrarHistorial(navController: NavController) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
+    val gradientColors = listOf(Color(0xFFB0BEC5), Color(0xFFECEFF1))
 
     // Estado para almacenar los registros de sesiones de entrenamiento
     val sesiones = remember { mutableStateListOf<SesionEntrenamiento>() }
@@ -230,113 +233,115 @@ fun mostrarHistorial(navController: NavController) {
         }
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(start = 16.dp, end = 16.dp, top = 40.dp)
-    ) {
-        // Título
-        Text(
-            text = "Historial de Entrenamientos",
-            fontSize = 24.sp,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(bottom = 16.dp)
-        )
+    Box(modifier = Modifier.fillMaxSize().background(Brush.verticalGradient(gradientColors))){
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(start = 16.dp, end = 16.dp, top = 40.dp)
+        ) {
+            // Título
+            Text(
+                text = "Historial de Entrenamientos",
+                fontSize = 24.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(bottom = 16.dp)
+            )
 
-        // Mostrar error si existe
-        if (mensajeError.isNotEmpty()) {
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 16.dp),
-                colors = CardDefaults.cardColors(containerColor = Color(0xFFFFEBEE))
-            ) {
-                Text(
-                    text = mensajeError,
-                    modifier = Modifier.padding(16.dp),
-                    color = Color.Red
-                )
-            }
-        }
-
-        // Indicador de carga
-        if (cargando) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                CircularProgressIndicator()
-            }
-        }
-
-        // Si no hay sesiones
-        else if (sesiones.isEmpty()) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(16.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "No hay entrenamientos registrados",
-                    fontSize = 18.sp,
-                    color = Color.Gray
-                )
-            }
-        } else {
-            // Lista de sesiones
-            LazyColumn(
-                modifier = Modifier.weight(1f).padding(bottom = 25.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                items(sesiones) { sesion ->
-                    TarjetaSesion(sesion)
+            // Mostrar error si existe
+            if (mensajeError.isNotEmpty()) {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 16.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFFFFEBEE))
+                ) {
+                    Text(
+                        text = mensajeError,
+                        modifier = Modifier.padding(16.dp),
+                        color = Color.Red
+                    )
                 }
             }
-        }
-        // Botón para borrar historial
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 150.dp),
-            horizontalArrangement = Arrangement.Center
-        ) {
-            Button(
-                onClick = {
-                    scope.launch {
-                        // Mostrar diálogo de confirmación antes de borrar
-                        val confirmDelete = true
 
-                        if (confirmDelete && userEmail.isNotEmpty()) {
-                            // Borrar documentos del usuario actual
-                            db.collection("rutinaresumen")
-                                .whereEqualTo("userEmail", userEmail)
-                                .get()
-                                .addOnSuccessListener { documents ->
-                                    for (document in documents) {
-                                        db.collection("rutinaresumen").document(document.id).delete()
-                                    }
-                                    // Actualizar la lista después de borrar
-                                    obtenerSesionesDB()
-                                }
-                                .addOnFailureListener { e ->
-                                    mensajeError = "Error al borrar: ${e.message}"
-                                }
-                        }
-                    }
-                },
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1976D2))
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
+            // Indicador de carga
+            if (cargando) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    contentAlignment = Alignment.Center
                 ) {
-                    Icon(
-                        imageVector = androidx.compose.material.icons.Icons.Default.Delete,
-                        contentDescription = "Borrar historial",
-                        tint = Color.White,
+                    CircularProgressIndicator()
+                }
+            }
+
+            // Si no hay sesiones
+            else if (sesiones.isEmpty()) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(16.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "No hay entrenamientos registrados",
+                        fontSize = 18.sp,
+                        color = Color.Gray
                     )
+                }
+            } else {
+                // Lista de sesiones
+                LazyColumn(
+                    modifier = Modifier.weight(1f).padding(bottom = 25.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    items(sesiones) { sesion ->
+                        TarjetaSesion(sesion)
+                    }
+                }
+            }
+            // Botón para borrar historial
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 150.dp),
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Button(
+                    onClick = {
+                        scope.launch {
+                            // Mostrar diálogo de confirmación antes de borrar
+                            val confirmDelete = true
+
+                            if (confirmDelete && userEmail.isNotEmpty()) {
+                                // Borrar documentos del usuario actual
+                                db.collection("rutinaresumen")
+                                    .whereEqualTo("userEmail", userEmail)
+                                    .get()
+                                    .addOnSuccessListener { documents ->
+                                        for (document in documents) {
+                                            db.collection("rutinaresumen").document(document.id).delete()
+                                        }
+                                        // Actualizar la lista después de borrar
+                                        obtenerSesionesDB()
+                                    }
+                                    .addOnFailureListener { e ->
+                                        mensajeError = "Error al borrar: ${e.message}"
+                                    }
+                            }
+                        }
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1976D2))
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = androidx.compose.material.icons.Icons.Default.Delete,
+                            contentDescription = "Borrar historial",
+                            tint = Color.White,
+                        )
+                    }
                 }
             }
         }

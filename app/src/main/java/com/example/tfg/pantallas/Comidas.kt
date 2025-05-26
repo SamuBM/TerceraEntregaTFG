@@ -12,6 +12,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
@@ -26,10 +27,10 @@ fun mostrarComidas(navController: NavController) {
     val screenWidth = LocalConfiguration.current.screenWidthDp
     val padding = 16.dp
     val textSize = if (screenWidth < 400) 16.sp else 20.sp
-
+    val gradientColors = listOf(Color(0xFFB0BEC5), Color(0xFFECEFF1))
     Box(modifier = Modifier
         .fillMaxSize()
-        .background(Color(0xFFF5F5F5)) // Fondo gris claro
+        .background(Brush.verticalGradient(gradientColors)) // Fondo gris claro
     ) {
 
         Column(

@@ -24,19 +24,20 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import kotlinx.coroutines.delay
 import android.widget.Toast
+import androidx.compose.ui.graphics.Brush
 
 @Composable
 fun mostrarEjerciciosParaElegir(navController: NavController, rutinaState: RutinaState) {
     var isLoading by remember { mutableStateOf(true) }
     var isProcessing by remember { mutableStateOf(false) } // Estado para controlar operaciones en curso
     val contexto = LocalContext.current
-
+    val gradientColors = listOf(Color(0xFFB0BEC5), Color(0xFFECEFF1))
     LaunchedEffect(Unit) {
         delay(1000) // Simulamos carga de datos
         isLoading = false
     }
 
-    Box(modifier = Modifier.fillMaxSize()) {
+    Box(modifier = Modifier.fillMaxSize().background(Brush.verticalGradient(gradientColors))) {
         if (isLoading || isProcessing) {
             // Cargando...
             Column(

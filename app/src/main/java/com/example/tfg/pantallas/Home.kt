@@ -39,33 +39,42 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.tfg.R
+import org.checkerframework.common.subtyping.qual.Bottom
 
 @Composable
 fun mostrarHome(navController: NavController) {
     Box(modifier = Modifier.fillMaxSize()) {
+        Box(modifier = Modifier
+            .fillMaxWidth()
+            .height(30.dp)
+            .background(Color.DarkGray))
         // Fondo con imagen de pantalla completa
         Image(
             painter = painterResource(id = R.drawable.fondomovil), // Asegúrate de tener esta imagen en res/drawable
             contentDescription = null,
             contentScale = ContentScale.Crop,
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier.fillMaxSize().padding(top = 30.dp)
         )
 
         // Contenido existente
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(start = 8.dp, end = 8.dp, top = 15.dp, bottom = 95.dp),
+                .padding(start = 8.dp, end = 8.dp, top = 15.dp, bottom = 155.dp),
             verticalArrangement = Arrangement.Bottom,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Button(
                 onClick = { navController.navigate("PantallaTiempo") },
-                modifier = Modifier.padding(80.dp),
+                modifier = Modifier
+                    .height(48.dp)
+                    .width(180.dp)
+                    .background(Color(0xFF1976D2), shape = RoundedCornerShape(16.dp)),
+                content = {
+                    Text("Empezar", fontSize = 16.sp, color = Color.White)
+                },
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1976D2))
-            ) {
-                Text(text = "Empezar")
-            }
+            )
         }
 
         mostrarNavegador(navController, "Home")

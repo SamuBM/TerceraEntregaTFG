@@ -1,6 +1,7 @@
 package com.example.tfg.pantallas
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -11,6 +12,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -23,6 +25,7 @@ import kotlinx.coroutines.delay
 @Composable
 fun mostrarEjercicios(navController: NavController) {
     var isLoading by remember { mutableStateOf(true) }
+    val gradientColors = listOf(Color(0xFFB0BEC5), Color(0xFFECEFF1))
 
     LaunchedEffect(Unit) {
         delay(2000)
@@ -38,7 +41,7 @@ fun mostrarEjercicios(navController: NavController) {
             CircularProgressIndicator()
         }
     } else {
-        Box(modifier = Modifier.fillMaxSize()) {
+        Box(modifier = Modifier.fillMaxSize().background(Brush.verticalGradient(gradientColors))) {
             Column(modifier = Modifier.fillMaxSize().padding(bottom = 150.dp, top = 20.dp)) {
 
                 // 🏷 TÍTULO DE LA PANTALLA

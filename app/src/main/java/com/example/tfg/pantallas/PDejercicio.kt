@@ -17,6 +17,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.layout.ContentScale
@@ -29,7 +30,7 @@ fun mostrarEjercicio(navController: NavController, ejercicioId: Int) {
     val ejercicio = ejerciciosList.find { it.id == ejercicioId } ?: return
     var isLoading by remember { mutableStateOf(true) }
     var showVideo by remember { mutableStateOf(true) }
-
+    val gradientColors = listOf(Color(0xFFB0BEC5), Color(0xFFECEFF1))
     // VideoView para manejar la reproducción del video
     val videoView = remember { android.widget.VideoView(navController.context) }
 
@@ -49,7 +50,7 @@ fun mostrarEjercicio(navController: NavController, ejercicioId: Int) {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp)
+            .background(Brush.verticalGradient(gradientColors))
     ) {
         if (isLoading) {
             // Indicador de carga centrado
@@ -66,7 +67,7 @@ fun mostrarEjercicio(navController: NavController, ejercicioId: Int) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(bottom = 16.dp), // espacio inferior
+                    .padding(16.dp), // espacio inferior
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
 

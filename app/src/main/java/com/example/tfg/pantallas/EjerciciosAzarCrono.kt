@@ -150,16 +150,16 @@ fun mostrarCronometroEjerciciosAzar(
     val completadoGradient = Brush.linearGradient(
         colors = listOf(Color(0xFFFF9800), Color(0xFFFFEB3B))
     )
-
+    val gradientColors = listOf(Color(0xFFB0BEC5), Color(0xFFECEFF1))
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFF5F5F5))
+            .background(Brush.verticalGradient(gradientColors))
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp),
+                .padding(top = 40.dp, bottom = 16.dp, end = 16.dp, start = 16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {

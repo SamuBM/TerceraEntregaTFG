@@ -1,11 +1,13 @@
 package com.example.tfg.pantallas
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -39,81 +41,29 @@ fun mostrarPantallaTiempo(navController: NavController) {
         )
     }
 
-    LazyColumn(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(start = 8.dp, end = 8.dp, top = 15.dp, bottom = 95.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        item {
-            Text(
-                text = "Entrenar",
-                fontSize = 28.sp,
-                fontWeight = FontWeight.Bold,
-                textAlign = TextAlign.Center,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 40.dp)
-            )
-
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 16.dp, end = 16.dp, top = 60.dp),
-                elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
-                colors = CardDefaults.cardColors(containerColor = Color(0xFF64B5F6))
-            ) {
-                Column(
+    val gradientColors = listOf(Color(0xFFB0BEC5), Color(0xFFECEFF1))
+    Box(modifier = Modifier.fillMaxSize().background(Brush.verticalGradient(gradientColors))){
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(start = 8.dp, end = 8.dp, top = 15.dp, bottom = 95.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            item {
+                Text(
+                    text = "Entrenar",
+                    fontSize = 28.sp,
+                    fontWeight = FontWeight.Bold,
+                    textAlign = TextAlign.Center,
                     modifier = Modifier
-                        .padding(24.dp)
-                        .fillMaxWidth(),
-                    verticalArrangement = Arrangement.spacedBy(24.dp)
-                ) {
-                    DropDownRow(
-                        label = "Duración Ejercicios",
-                        selected = "$selectedEjercicio s",
-                        expanded = expandedEjercicio,
-                        onExpand = { expandedEjercicio = true },
-                        onDismiss = { expandedEjercicio = false },
-                        opciones = opcionesEjercicio.map { "$it s" },
-                        onSelect = {
-                            selectedEjercicio = it.filter { c -> c.isDigit() }.toInt()
-                            expandedEjercicio = false
-                        }
-                    )
+                        .fillMaxWidth()
+                        .padding(top = 40.dp)
+                )
 
-                    DropDownRow(
-                        label = "Duración Descansos",
-                        selected = "$selectedDescanso s",
-                        expanded = expandedDescanso,
-                        onExpand = { expandedDescanso = true },
-                        onDismiss = { expandedDescanso = false },
-                        opciones = opcionesDescanso.map { "$it s" },
-                        onSelect = {
-                            selectedDescanso = it.filter { c -> c.isDigit() }.toInt()
-                            expandedDescanso = false
-                        }
-                    )
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Text("Ejercicios en orden aleatorio", fontSize = 16.sp)
-                        Switch(
-                            checked = aleatorio,
-                            onCheckedChange = { aleatorio = it }
-                        )
-                    }
-                }
-            }
-
-            if (aleatorio) {
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 24.dp),
+                        .padding(start = 16.dp, end = 16.dp, top = 60.dp),
                     elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
                     colors = CardDefaults.cardColors(containerColor = Color(0xFF64B5F6))
                 ) {
@@ -121,75 +71,131 @@ fun mostrarPantallaTiempo(navController: NavController) {
                         modifier = Modifier
                             .padding(24.dp)
                             .fillMaxWidth(),
-                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                        verticalArrangement = Arrangement.spacedBy(24.dp)
                     ) {
-                        Text(
-                            text = "Cantidad de Ejercicios Aleatorios",
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Medium
+                        DropDownRow(
+                            label = "Duración Ejercicios",
+                            selected = "$selectedEjercicio s",
+                            expanded = expandedEjercicio,
+                            onExpand = { expandedEjercicio = true },
+                            onDismiss = { expandedEjercicio = false },
+                            opciones = opcionesEjercicio.map { "$it s" },
+                            onSelect = {
+                                selectedEjercicio = it.filter { c -> c.isDigit() }.toInt()
+                                expandedEjercicio = false
+                            }
                         )
 
-                        DropdownMenuCantidad(
-                            selected = cantidadEjercicios,
-                            opciones = opcionesCantidad,
-                            onSelect = { cantidadEjercicios = it }
+                        DropDownRow(
+                            label = "Duración Descansos",
+                            selected = "$selectedDescanso s",
+                            expanded = expandedDescanso,
+                            onExpand = { expandedDescanso = true },
+                            onDismiss = { expandedDescanso = false },
+                            opciones = opcionesDescanso.map { "$it s" },
+                            onSelect = {
+                                selectedDescanso = it.filter { c -> c.isDigit() }.toInt()
+                                expandedDescanso = false
+                            }
                         )
-                        Spacer(modifier = Modifier.height(5.dp))
-                        Button(onClick = {
-                            navController.currentBackStackEntry?.savedStateHandle?.set(
-                                "tiempoEjercicio",
-                                selectedEjercicio
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text("Ejercicios en orden aleatorio", fontSize = 16.sp)
+                            Switch(
+                                checked = aleatorio,
+                                onCheckedChange = { aleatorio = it }
                             )
-                            navController.currentBackStackEntry?.savedStateHandle?.set(
-                                "tiempoDescanso",
-                                selectedDescanso
-                            )
-                            navController.currentBackStackEntry?.savedStateHandle?.set(
-                                "cantidadEjercicios",
-                                cantidadEjercicios
-                            )
-                            navController.navigate("EjerciciosAzarCrono")
-                        })
-                        {
-                            Text("Empezar")
                         }
                     }
                 }
-            }
 
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(start = 8.dp, end = 8.dp, top = 15.dp, bottom = 95.dp),
-                contentAlignment = Alignment.BottomEnd
-            ) {
-                // Mantenemos solo los botones RS y RD (sin el botón Empezar)
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 15.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Button(
-                        onClick = { navController.navigate("RutinaSemanal") },
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1976D2))
+                if (aleatorio) {
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 24.dp),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
+                        colors = CardDefaults.cardColors(containerColor = Color(0xFF64B5F6))
                     ) {
-                        Text("RS")
+                        Column(
+                            modifier = Modifier
+                                .padding(24.dp)
+                                .fillMaxWidth(),
+                            verticalArrangement = Arrangement.spacedBy(16.dp)
+                        ) {
+                            Text(
+                                text = "Cantidad de Ejercicios Aleatorios",
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Medium
+                            )
+
+                            DropdownMenuCantidad(
+                                selected = cantidadEjercicios,
+                                opciones = opcionesCantidad,
+                                onSelect = { cantidadEjercicios = it }
+                            )
+                            Spacer(modifier = Modifier.height(5.dp))
+                            Button(onClick = {
+                                navController.currentBackStackEntry?.savedStateHandle?.set(
+                                    "tiempoEjercicio",
+                                    selectedEjercicio
+                                )
+                                navController.currentBackStackEntry?.savedStateHandle?.set(
+                                    "tiempoDescanso",
+                                    selectedDescanso
+                                )
+                                navController.currentBackStackEntry?.savedStateHandle?.set(
+                                    "cantidadEjercicios",
+                                    cantidadEjercicios
+                                )
+                                navController.navigate("EjerciciosAzarCrono")
+                            })
+                            {
+                                Text("Empezar")
+                            }
+                        }
                     }
+                }
 
-                    // Espacio en medio donde estaba el botón "Empezar"
-                    Spacer(modifier = Modifier.width(120.dp))
-
-                    Button(
-                        onClick = { navController.navigate("RutinaDiaria") },
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1976D2))
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(start = 8.dp, end = 8.dp, top = 15.dp, bottom = 95.dp),
+                    contentAlignment = Alignment.BottomEnd
+                ) {
+                    // Mantenemos solo los botones RS y RD (sin el botón Empezar)
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 15.dp),
+                        horizontalArrangement = Arrangement.SpaceAround
                     ) {
-                        Text("RD")
+                        Button(
+                            onClick = { navController.navigate("RutinaSemanal") },
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1976D2))
+                        ) {
+                            Text("RS")
+                        }
+
+                        // Espacio en medio donde estaba el botón "Empezar"
+                        Spacer(modifier = Modifier.width(120.dp))
+
+                        Button(
+                            onClick = { navController.navigate("RutinaDiaria") },
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1976D2))
+                        ) {
+                            Text("RD")
+                        }
                     }
                 }
             }
         }
     }
+
     mostrarNavegador(navController, "Home")
 }
 

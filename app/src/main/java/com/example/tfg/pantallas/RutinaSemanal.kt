@@ -24,6 +24,7 @@ import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -269,7 +270,7 @@ fun mostrarRutinaSemanal(
 ) {
     val diasSemana = listOf("Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo")
     val contexto = LocalContext.current
-
+    val gradientColors = listOf(Color(0xFFB0BEC5), Color(0xFFECEFF1))
     // Cargar datos al iniciar la pantalla
     LaunchedEffect(Unit) {
         rutinaState.cargarEjerciciosDesdeBD(contexto)
@@ -279,7 +280,7 @@ fun mostrarRutinaSemanal(
     val tiempoEjercicio = navController.previousBackStackEntry?.savedStateHandle?.get<Int>("tiempoEjercicio") ?: 30
     val tiempoDescanso = navController.previousBackStackEntry?.savedStateHandle?.get<Int>("tiempoDescanso") ?: 30
 
-    Box(modifier = Modifier.fillMaxSize()) {
+    Box(modifier = Modifier.fillMaxSize().background(Brush.verticalGradient(gradientColors))) {
         // Mostrar cargando si es necesario
         if (rutinaState.isLoading) {
             Column(
