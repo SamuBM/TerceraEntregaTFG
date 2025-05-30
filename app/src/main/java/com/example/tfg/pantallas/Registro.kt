@@ -4,7 +4,9 @@ import android.content.Context
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Email
@@ -17,6 +19,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -38,12 +41,35 @@ fun mostrarRegistro(navController: NavController) {
     var isLoading by remember { mutableStateOf(false) }
 
     val contexto = LocalContext.current
+    val configuration = LocalConfiguration.current
+    val screenHeight = configuration.screenHeightDp.dp
+    val screenWidth = configuration.screenWidthDp.dp
+
+    // Tamaños responsive
+    val isSmallScreen = screenHeight < 700.dp || screenWidth < 400.dp
+    val headerSize = if (isSmallScreen) 20.sp else 24.sp
+    val titleSize = if (isSmallScreen) 16.sp else 20.sp
+    val textSize = if (isSmallScreen) 12.sp else 14.sp
+    val buttonHeight = if (isSmallScreen) 45.dp else 50.dp
+    val paddingSize = if (isSmallScreen) 12.dp else 16.dp
+    val spacingSize = if (isSmallScreen) 8.dp else 16.dp
+    val cardPadding = if (isSmallScreen) 16.dp else 24.dp
+
     val gradientColors = listOf(Color(0xFF1976D2), Color(0xFF64B5F6))
 
+    // Validaciones
+    val emailValido = validarEmail(email)
+    val contrasenaValida = validarContrasena(contrasena)
     val contraseñasCoinciden = contrasena == contrasena2 || contrasena2.isEmpty()
+    val nombreValido = nombre.length <= 50
+    val telefonoValido = telefono.length <= 15 && telefono.all { it.isDigit() || it == '+' || it == ' ' }
+
     val camposCompletos = nombre.isNotEmpty() && email.isNotEmpty() &&
             contrasena.isNotEmpty() && contrasena2.isNotEmpty() &&
             telefono.isNotEmpty()
+
+    val todosLosCamposValidos = emailValido && contrasenaValida && contraseñasCoinciden &&
+            nombreValido && telefonoValido && camposCompletos
 
     Box(
         modifier = Modifier
@@ -53,12 +79,14 @@ fun mostrarRegistro(navController: NavController) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp)
+                .verticalScroll(rememberScrollState())
+                .padding(paddingSize)
         ) {
+            // Header más compacto
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 16.dp, bottom = 16.dp),
+                    .padding(top = if (isSmallScreen) 8.dp else 16.dp, bottom = spacingSize),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 IconButton(
@@ -68,49 +96,46 @@ fun mostrarRegistro(navController: NavController) {
                         imageVector = Icons.Default.ArrowBack,
                         contentDescription = "Volver",
                         tint = Color.White,
-                        modifier = Modifier.size(28.dp)
+                        modifier = Modifier.size(if (isSmallScreen) 24.dp else 28.dp)
                     )
                 }
 
                 Text(
                     text = "Registro",
-                    fontSize = 24.sp,
+                    fontSize = headerSize,
                     fontWeight = FontWeight.Bold,
                     color = Color.White,
-                    modifier = Modifier.padding(start = 16.dp)
+                    modifier = Modifier.padding(start = spacingSize)
                 )
             }
 
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 8.dp, vertical = 16.dp),
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = Color.White
-                ),
-                elevation = CardDefaults.cardElevation(
-                    defaultElevation = 8.dp
-                )
+                    .padding(horizontal = if (isSmallScreen) 4.dp else 8.dp),
+                shape = RoundedCornerShape(12.dp),
+                colors = CardDefaults.cardColors(containerColor = Color.White),
+                elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
             ) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(24.dp),
+                        .padding(cardPadding),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
                         text = "Crear una cuenta",
-                        fontSize = 20.sp,
+                        fontSize = titleSize,
                         fontWeight = FontWeight.Bold,
                         color = Color(0xFF1976D2),
-                        modifier = Modifier.padding(bottom = 24.dp)
+                        modifier = Modifier.padding(bottom = spacingSize)
                     )
 
+                    // Campo Nombre
                     OutlinedTextField(
                         value = nombre,
-                        onValueChange = { nombre = it },
-                        label = { Text("Nombre completo") },
+                        onValueChange = { if (it.length <= 50) nombre = it },
+                        label = { Text("Nombre completo", fontSize = textSize) },
                         leadingIcon = {
                             Icon(
                                 imageVector = Icons.Default.Person,
@@ -118,57 +143,13 @@ fun mostrarRegistro(navController: NavController) {
                                 tint = Color(0xFF1976D2)
                             )
                         },
-                        singleLine = true,
-                        shape = RoundedCornerShape(12.dp),
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = TextFieldDefaults.outlinedTextFieldColors(
-                            focusedBorderColor = Color(0xFF1976D2),
-                            unfocusedBorderColor = Color.Gray,
-                            cursorColor = Color(0xFF1976D2)
-                        )
-                    )
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    OutlinedTextField(
-                        value = email,
-                        onValueChange = { email = it },
-                        label = { Text("Correo electrónico") },
-                        leadingIcon = {
-                            Icon(
-                                imageVector = Icons.Default.Email,
-                                contentDescription = "Email",
-                                tint = Color(0xFF1976D2)
-                            )
+                        supportingText = {
+                            Text("${nombre.length}/50", fontSize = (textSize.value - 2).sp)
                         },
+                        isError = !nombreValido,
                         singleLine = true,
-                        shape = RoundedCornerShape(12.dp),
+                        shape = RoundedCornerShape(8.dp),
                         modifier = Modifier.fillMaxWidth(),
-                        colors = TextFieldDefaults.outlinedTextFieldColors(
-                            focusedBorderColor = Color(0xFF1976D2),
-                            unfocusedBorderColor = Color.Gray,
-                            cursorColor = Color(0xFF1976D2)
-                        )
-                    )
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    OutlinedTextField(
-                        value = contrasena,
-                        onValueChange = { contrasena = it },
-                        label = { Text("Contraseña") },
-                        leadingIcon = {
-                            Icon(
-                                imageVector = Icons.Default.Lock,
-                                contentDescription = "Contraseña",
-                                tint = Color(0xFF1976D2)
-                            )
-                        },
-                        visualTransformation = PasswordVisualTransformation(),
-                        singleLine = true,
-                        shape = RoundedCornerShape(12.dp),
-                        modifier = Modifier.fillMaxWidth(),
-                        isError = contrasena.isNotEmpty() && contrasena2.isNotEmpty() && !contraseñasCoinciden,
                         colors = TextFieldDefaults.outlinedTextFieldColors(
                             focusedBorderColor = Color(0xFF1976D2),
                             unfocusedBorderColor = Color.Gray,
@@ -177,12 +158,72 @@ fun mostrarRegistro(navController: NavController) {
                         )
                     )
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(spacingSize))
 
+                    // Campo Email
+                    OutlinedTextField(
+                        value = email,
+                        onValueChange = { if (it.length <= 100) email = it },
+                        label = { Text("Correo electrónico", fontSize = textSize) },
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Default.Email,
+                                contentDescription = "Email",
+                                tint = Color(0xFF1976D2)
+                            )
+                        },
+                        supportingText = {
+                            Text("${email.length}/100 (gmail.com, outlook.es)", fontSize = (textSize.value - 2).sp)
+                        },
+                        isError = email.isNotEmpty() && !emailValido,
+                        singleLine = true,
+                        shape = RoundedCornerShape(8.dp),
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = TextFieldDefaults.outlinedTextFieldColors(
+                            focusedBorderColor = Color(0xFF1976D2),
+                            unfocusedBorderColor = Color.Gray,
+                            cursorColor = Color(0xFF1976D2),
+                            errorBorderColor = Color.Red
+                        )
+                    )
+
+                    Spacer(modifier = Modifier.height(spacingSize))
+
+                    // Campo Contraseña
+                    OutlinedTextField(
+                        value = contrasena,
+                        onValueChange = { if (it.length <= 30) contrasena = it },
+                        label = { Text("Contraseña", fontSize = textSize) },
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Default.Lock,
+                                contentDescription = "Contraseña",
+                                tint = Color(0xFF1976D2)
+                            )
+                        },
+                        supportingText = {
+                            Text("${contrasena.length}/30 (May, min, especial)", fontSize = (textSize.value - 2).sp)
+                        },
+                        visualTransformation = PasswordVisualTransformation(),
+                        singleLine = true,
+                        shape = RoundedCornerShape(8.dp),
+                        modifier = Modifier.fillMaxWidth(),
+                        isError = contrasena.isNotEmpty() && !contrasenaValida,
+                        colors = TextFieldDefaults.outlinedTextFieldColors(
+                            focusedBorderColor = Color(0xFF1976D2),
+                            unfocusedBorderColor = Color.Gray,
+                            cursorColor = Color(0xFF1976D2),
+                            errorBorderColor = Color.Red
+                        )
+                    )
+
+                    Spacer(modifier = Modifier.height(spacingSize))
+
+                    // Campo Confirmar Contraseña
                     OutlinedTextField(
                         value = contrasena2,
-                        onValueChange = { contrasena2 = it },
-                        label = { Text("Confirmar contraseña") },
+                        onValueChange = { if (it.length <= 30) contrasena2 = it },
+                        label = { Text("Confirmar contraseña", fontSize = textSize) },
                         leadingIcon = {
                             Icon(
                                 imageVector = Icons.Default.Lock,
@@ -192,7 +233,7 @@ fun mostrarRegistro(navController: NavController) {
                         },
                         visualTransformation = PasswordVisualTransformation(),
                         singleLine = true,
-                        shape = RoundedCornerShape(12.dp),
+                        shape = RoundedCornerShape(8.dp),
                         modifier = Modifier.fillMaxWidth(),
                         isError = contrasena.isNotEmpty() && contrasena2.isNotEmpty() && !contraseñasCoinciden,
                         colors = TextFieldDefaults.outlinedTextFieldColors(
@@ -203,12 +244,17 @@ fun mostrarRegistro(navController: NavController) {
                         )
                     )
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(spacingSize))
 
+                    // Campo Teléfono
                     OutlinedTextField(
                         value = telefono,
-                        onValueChange = { telefono = it },
-                        label = { Text("Teléfono") },
+                        onValueChange = {
+                            if (it.length <= 15 && (it.all { char -> char.isDigit() || char == '+' || char == ' ' } || it.isEmpty())) {
+                                telefono = it
+                            }
+                        },
+                        label = { Text("Teléfono", fontSize = textSize) },
                         leadingIcon = {
                             Icon(
                                 imageVector = Icons.Default.Phone,
@@ -216,34 +262,27 @@ fun mostrarRegistro(navController: NavController) {
                                 tint = Color(0xFF1976D2)
                             )
                         },
+                        supportingText = {
+                            Text("${telefono.length}/15", fontSize = (textSize.value - 2).sp)
+                        },
+                        isError = telefono.isNotEmpty() && !telefonoValido,
                         singleLine = true,
-                        shape = RoundedCornerShape(12.dp),
+                        shape = RoundedCornerShape(8.dp),
                         modifier = Modifier.fillMaxWidth(),
                         colors = TextFieldDefaults.outlinedTextFieldColors(
                             focusedBorderColor = Color(0xFF1976D2),
                             unfocusedBorderColor = Color.Gray,
-                            cursorColor = Color(0xFF1976D2)
+                            cursorColor = Color(0xFF1976D2),
+                            errorBorderColor = Color.Red
                         )
                     )
 
-                    if (!contraseñasCoinciden) {
+                    // Mensajes de error compactos
+                    if (!contraseñasCoinciden && contrasena2.isNotEmpty()) {
                         Text(
                             text = "Las contraseñas no coinciden",
                             color = Color.Red,
-                            fontSize = 12.sp,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(top = 4.dp),
-                            textAlign = TextAlign.Start
-                        )
-                    }
-
-                    if (!camposCompletos && (nombre.isNotEmpty() || email.isNotEmpty() ||
-                                contrasena.isNotEmpty() || contrasena2.isNotEmpty() || telefono.isNotEmpty())) {
-                        Text(
-                            text = "Todos los campos son obligatorios",
-                            color = Color.Red,
-                            fontSize = 12.sp,
+                            fontSize = (textSize.value - 2).sp,
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(top = 4.dp),
@@ -255,19 +294,19 @@ fun mostrarRegistro(navController: NavController) {
                         Text(
                             text = mensajeError,
                             color = Color.Red,
-                            fontSize = 14.sp,
+                            fontSize = textSize,
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(top = 8.dp),
+                                .padding(top = 4.dp),
                             textAlign = TextAlign.Center
                         )
                     }
 
-                    Spacer(modifier = Modifier.height(24.dp))
+                    Spacer(modifier = Modifier.height(spacingSize))
 
                     Button(
                         onClick = {
-                            if (camposCompletos && contraseñasCoinciden) {
+                            if (todosLosCamposValidos) {
                                 isLoading = true
                                 registrarUsuarioFirestore(
                                     contexto,
@@ -283,11 +322,11 @@ fun mostrarRegistro(navController: NavController) {
                                 )
                             }
                         },
-                        enabled = camposCompletos && contraseñasCoinciden && !isLoading,
+                        enabled = todosLosCamposValidos && !isLoading,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(50.dp),
-                        shape = RoundedCornerShape(12.dp),
+                            .height(buttonHeight),
+                        shape = RoundedCornerShape(8.dp),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = Color(0xFF1976D2),
                             disabledContainerColor = Color.Gray
@@ -296,20 +335,39 @@ fun mostrarRegistro(navController: NavController) {
                         if (isLoading) {
                             CircularProgressIndicator(
                                 color = Color.White,
-                                modifier = Modifier.size(24.dp)
+                                modifier = Modifier.size(if (isSmallScreen) 20.dp else 24.dp)
                             )
                         } else {
                             Text(
                                 text = "REGISTRARSE",
-                                fontSize = 16.sp,
+                                fontSize = textSize,
                                 fontWeight = FontWeight.Bold
                             )
                         }
                     }
                 }
             }
+
+            // Espaciado final para pantallas pequeñas
+            Spacer(modifier = Modifier.height(if (isSmallScreen) 16.dp else 24.dp))
         }
     }
+}
+
+fun validarEmail(email: String): Boolean {
+    if (!email.contains("@")) return false
+    val dominiosPermitidos = listOf("gmail.com", "outlook.es")
+    return dominiosPermitidos.any { dominio -> email.endsWith("@$dominio") }
+}
+
+fun validarContrasena(contrasena: String): Boolean {
+    if (contrasena.length < 6) return false
+
+    val tieneMayuscula = contrasena.any { it.isUpperCase() }
+    val tieneMinuscula = contrasena.any { it.isLowerCase() }
+    val tieneEspecial = contrasena.any { !it.isLetterOrDigit() }
+
+    return tieneMayuscula && tieneMinuscula && tieneEspecial
 }
 
 fun registrarUsuarioFirestore(
@@ -323,7 +381,6 @@ fun registrarUsuarioFirestore(
 ) {
     val db = FirebaseFirestore.getInstance()
 
-    // Creamos un mapa con los datos del usuario
     val userData = hashMapOf(
         "nombre" to nombre,
         "email" to email,
@@ -331,20 +388,16 @@ fun registrarUsuarioFirestore(
         "telefono" to telefono
     )
 
-    // Primero verificamos si ya existe un usuario con este email
     db.collection("usuarios")
         .whereEqualTo("email", email)
         .get()
         .addOnSuccessListener { documents ->
             if (documents.isEmpty) {
-                // No existe usuario con ese email, procedemos a crear uno nuevo
                 db.collection("usuarios")
                     .add(userData)
                     .addOnSuccessListener { documentReference ->
-                        // Usuario registrado correctamente
                         val usuarioId = documentReference.id
 
-                        // Guardar el ID del usuario en SharedPreferences para usarlo en toda la app
                         val sharedPref = context.getSharedPreferences("AppPrefs", Context.MODE_PRIVATE)
                         with(sharedPref.edit()) {
                             putString("userId", usuarioId)
@@ -352,9 +405,6 @@ fun registrarUsuarioFirestore(
                             putString("userName", nombre)
                             apply()
                         }
-
-                        // Ya no creamos subcolecciones como rutinaresumen o rutina_semanal
-                        // Ahora usaremos una colección común: rutina_resumen
 
                         Toast.makeText(context, "Registro exitoso", Toast.LENGTH_SHORT).show()
                         navController.navigate("Home") {
@@ -366,7 +416,6 @@ fun registrarUsuarioFirestore(
                         Toast.makeText(context, "Error al registrar usuario", Toast.LENGTH_SHORT).show()
                     }
             } else {
-                // Ya existe un usuario con ese email
                 actualizarMensaje("Ya existe un usuario con este correo electrónico")
                 Toast.makeText(context, "Este correo ya está registrado", Toast.LENGTH_SHORT).show()
             }

@@ -4,7 +4,11 @@ import android.widget.VideoView
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -13,8 +17,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -29,6 +35,33 @@ fun mostrarEjerciciosConCrono(
     tiempoEjercicio: Int = 30,
     tiempoDescanso: Int = 30
 ) {
+    // Obtener configuración de pantalla para responsive design
+    val configuration = LocalConfiguration.current
+    val screenWidth = configuration.screenWidthDp.dp
+    val screenHeight = configuration.screenHeightDp.dp
+    val isSmallScreen = screenWidth < 360.dp
+    val isTallScreen = screenHeight > 800.dp
+
+    // Definir tamaños responsive para UI
+    val topPadding = if (isTallScreen) 40.dp else 24.dp
+    val sidePadding = if (isSmallScreen) 12.dp else 16.dp
+    val cardSpacing = if (isSmallScreen) 12.dp else 16.dp
+    val videoHeight = (screenHeight * 0.25f).coerceIn(180.dp, 280.dp)
+    val buttonPadding = if (isSmallScreen) 6.dp else 8.dp
+    val cardPadding = if (isSmallScreen) 12.dp else 16.dp
+    val verticalSpacing = if (isSmallScreen) 6.dp else 8.dp
+
+    // Definir tamaños responsive para texto
+    val titleFontSize = if (isSmallScreen) 16.sp else 18.sp
+    val exerciseTitleFontSize = if (isSmallScreen) 18.sp else 22.sp
+    val statusFontSize = if (isSmallScreen) 20.sp else 24.sp
+    val timerFontSize = if (isSmallScreen) 45.sp else 60.sp
+    val videoStatusFontSize = if (isSmallScreen) 24.sp else 32.sp
+    val noExerciseFontSize = if (isSmallScreen) 16.sp else 20.sp
+    val progressFontSize = if (isSmallScreen) 14.sp else 16.sp
+    val buttonFontSize = if (isSmallScreen) 14.sp else 16.sp
+    val exitButtonFontSize = if (isSmallScreen) 12.sp else 14.sp
+
     val diasSemana =
         listOf("Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo")
     val calendar = Calendar.getInstance()
@@ -166,16 +199,23 @@ fun mostrarEjerciciosConCrono(
         colors = listOf(Color(0xFFFF9800), Color(0xFFFFEB3B))
     )
     val gradientColors = listOf(Color(0xFFB0BEC5), Color(0xFFECEFF1))
+
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(Brush.verticalGradient(gradientColors))
+            .padding(top = 30.dp)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(top = 40.dp, bottom = 16.dp, end = 16.dp, start = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
+                .verticalScroll(rememberScrollState())
+                .padding(
+                    bottom = 30.dp,
+                    end = sidePadding,
+                    start = sidePadding
+                ),
+            verticalArrangement = Arrangement.spacedBy(cardSpacing),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             // Título que muestra de dónde proviene la rutina
@@ -189,8 +229,12 @@ fun mostrarEjerciciosConCrono(
                         "Rutina para hoy (${diasSemana[diaIndexActual]})"
                     else
                         "Rutina del ${diasSemana[diaIndexActual]}",
-                    style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.padding(16.dp),
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontSize = titleFontSize
+                    ),
+                    modifier = Modifier
+                        .padding(cardPadding)
+                        .align(Alignment.CenterHorizontally),
                     fontWeight = FontWeight.Bold
                 )
             }
@@ -199,8 +243,8 @@ fun mostrarEjerciciosConCrono(
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(250.dp),
-                shape = RoundedCornerShape(16.dp),
+                    .height(videoHeight),
+                shape = RoundedCornerShape(if (isSmallScreen) 12.dp else 16.dp),
                 elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
             ) {
                 Box(
@@ -231,7 +275,7 @@ fun mostrarEjerciciosConCrono(
                                 painter = painterResource(id = rutinaDelDia[ejercicioActual].imagenRes),
                                 contentDescription = rutinaDelDia[ejercicioActual].titulo,
                                 modifier = Modifier.fillMaxSize(),
-                                contentScale = ContentScale.Fit  // <- Cambiado a Fit para evitar recortes
+                                contentScale = ContentScale.Fit
                             )
                         }
                     } else if (esDescanso) {
@@ -245,7 +289,7 @@ fun mostrarEjerciciosConCrono(
                             Text(
                                 text = "DESCANSO",
                                 color = Color.White,
-                                fontSize = 32.sp,
+                                fontSize = videoStatusFontSize,
                                 fontWeight = FontWeight.Bold
                             )
                         }
@@ -260,7 +304,7 @@ fun mostrarEjerciciosConCrono(
                             Text(
                                 text = "¡COMPLETADO!",
                                 color = Color.White,
-                                fontSize = 32.sp,
+                                fontSize = videoStatusFontSize,
                                 fontWeight = FontWeight.Bold
                             )
                         }
@@ -274,7 +318,7 @@ fun mostrarEjerciciosConCrono(
                             Text(
                                 text = "No hay ejercicios programados",
                                 color = Color.White,
-                                fontSize = 20.sp
+                                fontSize = noExerciseFontSize
                             )
                         }
                     }
@@ -290,9 +334,11 @@ fun mostrarEjerciciosConCrono(
                 ) {
                     Text(
                         text = rutinaDelDia[ejercicioActual].titulo,
-                        style = MaterialTheme.typography.titleLarge,
+                        style = MaterialTheme.typography.titleLarge.copy(
+                            fontSize = exerciseTitleFontSize
+                        ),
                         modifier = Modifier
-                            .padding(16.dp)
+                            .padding(cardPadding)
                             .align(Alignment.CenterHorizontally),
                         fontWeight = FontWeight.Bold
                     )
@@ -314,9 +360,9 @@ fun mostrarEjerciciosConCrono(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(16.dp),
+                        .padding(cardPadding),
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                    verticalArrangement = Arrangement.spacedBy(verticalSpacing)
                 ) {
                     // Estado (Ejercicio o Descanso)
                     Text(
@@ -325,7 +371,7 @@ fun mostrarEjerciciosConCrono(
                             esDescanso -> "DESCANSO"
                             else -> "EJERCICIO"
                         },
-                        fontSize = 24.sp,
+                        fontSize = statusFontSize,
                         fontWeight = FontWeight.Bold,
                         color = when {
                             rutinaCompletada -> Color(0xFFFF9800)
@@ -337,13 +383,14 @@ fun mostrarEjerciciosConCrono(
                     // Cronómetro
                     Text(
                         text = if (rutinaCompletada) "¡Bien hecho!" else if (tiempoRestante > 0) "$tiempoRestante s" else "¡Terminado!",
-                        fontSize = 60.sp,
+                        fontSize = timerFontSize,
                         fontWeight = FontWeight.Bold,
                         color = when {
                             rutinaCompletada -> Color(0xFFFF9800)
                             esDescanso -> Color(0xFF1976D2)
                             else -> Color(0xFF388E3C)
-                        }
+                        },
+                        textAlign = TextAlign.Center
                     )
                 }
             }
@@ -358,10 +405,10 @@ fun mostrarEjerciciosConCrono(
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                            .padding(cardPadding),
+                        verticalArrangement = Arrangement.spacedBy(verticalSpacing)
                     ) {
-                        // Arreglado: Cálculo correcto del progreso
+                        // Cálculo correcto del progreso
                         val progress = when {
                             rutinaCompletada -> 1f
                             else -> ((ejercicioActual * 2) + (if (esDescanso) 1 else 0)).toFloat() / (rutinaDelDia.size * 2 - 1).coerceAtLeast(1)
@@ -371,8 +418,8 @@ fun mostrarEjerciciosConCrono(
                             progress = progress,
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(12.dp)
-                                .clip(RoundedCornerShape(6.dp)),
+                                .height(if (isSmallScreen) 10.dp else 12.dp)
+                                .clip(RoundedCornerShape(if (isSmallScreen) 5.dp else 6.dp)),
                             color = when {
                                 rutinaCompletada -> Color(0xFFFF9800)
                                 esDescanso -> Color(0xFF2196F3)
@@ -383,69 +430,150 @@ fun mostrarEjerciciosConCrono(
 
                         Text(
                             text = "Progreso: ${ejercicioActual + 1}/${rutinaDelDia.size} ejercicios",
-                            fontWeight = FontWeight.Medium
+                            fontWeight = FontWeight.Medium,
+                            fontSize = progressFontSize
                         )
                     }
                 }
             }
 
-            // Controles
+            // Controles - Layout responsive para botones
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(containerColor = Color.White),
                 elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
             ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    horizontalArrangement = Arrangement.SpaceEvenly
-                ) {
-                    Button(
-                        onClick = {
-                            estaCorriendo = !estaCorriendo
-                        },
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = if (estaCorriendo) Color(0xFFF44336) else Color(0xFF4CAF50)
-                        ),
-                        modifier = Modifier.weight(1f),
-                        shape = RoundedCornerShape(8.dp)
+                if (isSmallScreen) {
+                    // En pantallas pequeñas, usar layout vertical
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(cardPadding),
+                        verticalArrangement = Arrangement.spacedBy(verticalSpacing)
                     ) {
-                        Text(
-                            if (estaCorriendo) "Pausar" else "Iniciar",
-                            fontWeight = FontWeight.Bold
-                        )
+                        Button(
+                            onClick = {
+                                estaCorriendo = !estaCorriendo
+                            },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = if (estaCorriendo) Color(0xFFF44336) else Color(0xFF4CAF50)
+                            ),
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(8.dp)
+                        ) {
+                            Icon(
+                                imageVector = if (estaCorriendo) Icons.Default.Pause else Icons.Default.PlayArrow,
+                                contentDescription = if (estaCorriendo) "Pausar" else "Iniciar",
+                                tint = Color.White,
+                                modifier = Modifier.size(if (isSmallScreen) 20.dp else 24.dp)
+                            )
+                        }
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(verticalSpacing)
+                        ) {
+                            Button(
+                                onClick = {
+                                    timer?.cancel()
+                                    tiempoRestante = if (esDescanso) tiempoDescanso else tiempoEjercicio
+                                    estaCorriendo = false
+                                    videoView.stopPlayback()
+                                },
+                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF5722)),
+                                modifier = Modifier.weight(1f),
+                                shape = RoundedCornerShape(8.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Refresh,
+                                    contentDescription = "Reiniciar",
+                                    tint = Color.White,
+                                    modifier = Modifier.size(if (isSmallScreen) 18.dp else 20.dp)
+                                )
+                            }
+
+                            Button(
+                                onClick = { siguienteEjercicio() },
+                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2196F3)),
+                                modifier = Modifier.weight(1f),
+                                shape = RoundedCornerShape(8.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.SkipNext,
+                                    contentDescription = "Siguiente",
+                                    tint = Color.White,
+                                    modifier = Modifier.size(if (isSmallScreen) 18.dp else 20.dp)
+                                )
+                            }
+                        }
                     }
-
-                    Spacer(modifier = Modifier.width(8.dp))
-
-                    Button(
-                        onClick = {
-                            timer?.cancel()
-                            tiempoRestante = if (esDescanso) tiempoDescanso else tiempoEjercicio
-                            estaCorriendo = false
-                            videoView.stopPlayback()
-                        },
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF5722)),
-                        modifier = Modifier.weight(1f),
-                        shape = RoundedCornerShape(8.dp)
+                } else {
+                    // En pantallas normales, usar layout horizontal
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(cardPadding),
+                        horizontalArrangement = Arrangement.SpaceEvenly
                     ) {
-                        Text("Reiniciar", fontWeight = FontWeight.Bold)
-                    }
+                        Button(
+                            onClick = {
+                                estaCorriendo = !estaCorriendo
+                            },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = if (estaCorriendo) Color(0xFFF44336) else Color(0xFF4CAF50)
+                            ),
+                            modifier = Modifier.weight(1f),
+                            shape = RoundedCornerShape(8.dp)
+                        ) {
+                            Icon(
+                                imageVector = if (estaCorriendo) Icons.Default.Pause else Icons.Default.PlayArrow,
+                                contentDescription = if (estaCorriendo) "Pausar" else "Iniciar",
+                                tint = Color.White,
+                                modifier = Modifier.size(if (isSmallScreen) 20.dp else 24.dp)
+                            )
+                        }
 
-                    Spacer(modifier = Modifier.width(8.dp))
+                        Spacer(modifier = Modifier.width(8.dp))
 
-                    Button(
-                        onClick = { siguienteEjercicio() },
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2196F3)),
-                        modifier = Modifier.weight(1f),
-                        shape = RoundedCornerShape(8.dp)
-                    ) {
-                        Text("Siguiente", fontWeight = FontWeight.Bold)
+                        Button(
+                            onClick = {
+                                timer?.cancel()
+                                tiempoRestante = if (esDescanso) tiempoDescanso else tiempoEjercicio
+                                estaCorriendo = false
+                                videoView.stopPlayback()
+                            },
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF5722)),
+                            modifier = Modifier.weight(1f),
+                            shape = RoundedCornerShape(8.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Refresh,
+                                contentDescription = "Reiniciar",
+                                tint = Color.White,
+                                modifier = Modifier.size(if (isSmallScreen) 20.dp else 22.dp)
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.width(8.dp))
+
+                        Button(
+                            onClick = { siguienteEjercicio() },
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2196F3)),
+                            modifier = Modifier.weight(1f),
+                            shape = RoundedCornerShape(8.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.SkipNext,
+                                contentDescription = "Siguiente",
+                                tint = Color.White,
+                                modifier = Modifier.size(if (isSmallScreen) 20.dp else 22.dp)
+                            )
+                        }
                     }
                 }
             }
 
+            // Botón salir
             Button(
                 onClick = {
                     // Guardar los datos para el historial antes de salir
@@ -463,24 +591,30 @@ fun mostrarEjerciciosConCrono(
                     )
 
                     // Añadir información sobre el tipo de rutina
-                        navController.currentBackStackEntry?.savedStateHandle?.set(
-                            "rutinaSemanal",
-                            true
-                        )
+                    navController.currentBackStackEntry?.savedStateHandle?.set(
+                        "rutinaSemanal",
+                        true
+                    )
 
                     // Navegar al historial
                     navController.navigate("Historial")
                 },
+                enabled = rutinaCompletada,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 8.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF9C27B0)),
+                    .padding(top = verticalSpacing),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = if (rutinaCompletada) Color(0xFF9C27B0) else Color(0xFFBDBDBD),
+                    disabledContainerColor = Color(0xFFBDBDBD)
+                ),
                 shape = RoundedCornerShape(8.dp)
             ) {
                 Text(
-                    text = "GUARDAR Y SALIR",
+                    text = if (rutinaCompletada) "GUARDAR Y SALIR" else "COMPLETA LA RUTINA PARA CONTINUAR",
                     fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(vertical = 8.dp)
+                    fontSize = exitButtonFontSize,
+                    color = if (rutinaCompletada) Color.White else Color(0xFF757575),
+                    modifier = Modifier.padding(vertical = buttonPadding)
                 )
             }
         }

@@ -3,7 +3,9 @@ package com.example.tfg.pantallas
 import android.content.Context
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.ExitToApp
@@ -14,9 +16,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -27,6 +31,7 @@ import kotlinx.coroutines.tasks.await
 @Composable
 fun mostrarPerfil(navController: NavController) {
     val contexto = LocalContext.current
+    val configuration = LocalConfiguration.current
     val sharedPref = contexto.getSharedPreferences("AppPrefs", Context.MODE_PRIVATE)
     val userEmail = sharedPref.getString("userEmail", "") ?: ""
 
@@ -35,179 +40,332 @@ fun mostrarPerfil(navController: NavController) {
     var mostrarDialogoCerrarSesion by remember { mutableStateOf(false) }
     var mostrarDialogoBorrarCuenta by remember { mutableStateOf(false) }
 
+    // Responsive dimensions based on screen size
+    val screenWidth = configuration.screenWidthDp.dp
+    val screenHeight = configuration.screenHeightDp.dp
+    val isTablet = screenWidth >= 600.dp
+    val isLandscape = screenWidth > screenHeight
+
+    // Adaptive dimensions
+    val profileIconSize = when {
+        isTablet -> 150.dp
+        isLandscape -> 100.dp
+        else -> 120.dp
+    }
+
+    val iconSize = when {
+        isTablet -> 100.dp
+        isLandscape -> 60.dp
+        else -> 80.dp
+    }
+
+    val cardIconSize = when {
+        isTablet -> 40.dp
+        else -> 32.dp
+    }
+
+    val horizontalPadding = when {
+        isTablet -> 40.dp
+        screenWidth >= 400.dp -> 20.dp
+        else -> 16.dp
+    }
+
+    val cardPadding = when {
+        isTablet -> 40.dp
+        screenWidth >= 400.dp -> 20.dp
+        else -> 16.dp
+    }
+
+    val titleFontSize = when {
+        isTablet -> 36.sp
+        isLandscape -> 24.sp
+        else -> 28.sp
+    }
+
+    val emailFontSize = when {
+        isTablet -> 24.sp
+        isLandscape -> 16.sp
+        else -> 18.sp
+    }
+
+    val cardTextSize = when {
+        isTablet -> 22.sp
+        else -> 18.sp
+    }
+
+    val topSpacing = when {
+        isLandscape -> 20.dp
+        isTablet -> 80.dp
+        else -> 60.dp
+    }
+
     // Colores del gradiente para mantener consistencia con el login
     val gradientColors = listOf(Color(0xFF1976D2), Color(0xFF64B5F6))
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(
-                Brush.verticalGradient(gradientColors)
-            )
+            .background(Brush.verticalGradient(gradientColors))
     ) {
         Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = horizontalPadding)
+                .padding(bottom = if (isLandscape) 80.dp else 100.dp), // Extra padding for navigation
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(modifier = Modifier.height(60.dp))
+            Spacer(modifier = Modifier.height(topSpacing))
 
-            // Icono de perfil
+            // Icono de perfil con tamaño adaptativo
             Box(
                 modifier = Modifier
-                    .size(120.dp)
-                    .background(Color.White.copy(alpha = 0.9f), RoundedCornerShape(60.dp)),
+                    .size(profileIconSize)
+                    .background(
+                        Color.White.copy(alpha = 0.9f),
+                        RoundedCornerShape(profileIconSize / 2)
+                    ),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     imageVector = Icons.Default.Person,
                     contentDescription = "Perfil",
-                    modifier = Modifier.size(80.dp),
+                    modifier = Modifier.size(iconSize),
                     tint = Color(0xFF1976D2)
                 )
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(if (isLandscape) 12.dp else 16.dp))
 
-            // Mostrar email del usuario
+            // Email del usuario con texto adaptativo
             Text(
                 text = userEmail,
-                fontSize = 18.sp,
+                fontSize = emailFontSize,
                 fontWeight = FontWeight.Medium,
-                color = Color.White
+                color = Color.White,
+                textAlign = TextAlign.Center,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 8.dp)
             )
 
-            Spacer(modifier = Modifier.height(40.dp))
+            Spacer(modifier = Modifier.height(if (isLandscape) 24.dp else 40.dp))
 
+            // Título adaptativo
             Text(
                 text = "Mi Perfil",
-                fontSize = 28.sp,
+                fontSize = titleFontSize,
                 fontWeight = FontWeight.Bold,
-                color = Color.White
+                color = Color.White,
+                textAlign = TextAlign.Center
             )
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(if (isLandscape) 24.dp else 32.dp))
 
-            // Card para cerrar sesión
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 20.dp),
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = Color.White
-                ),
-                elevation = CardDefaults.cardElevation(
-                    defaultElevation = 8.dp
-                ),
-                onClick = { mostrarDialogoCerrarSesion = true }
-            ) {
+            // Layout adaptativo para tablets en landscape
+            if (isTablet && isLandscape) {
+                // Layout horizontal para tablets en landscape
                 Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(20.dp)
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.ExitToApp,
-                        contentDescription = "Cerrar Sesión",
-                        tint = Color(0xFF1976D2),
-                        modifier = Modifier.size(32.dp)
-                    )
-                    Spacer(modifier = Modifier.width(16.dp))
-                    Text(
+                    // Card para cerrar sesión
+                    ProfileActionCard(
+                        modifier = Modifier.weight(1f),
+                        icon = Icons.Default.ExitToApp,
                         text = "Cerrar Sesión",
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Medium
+                        iconColor = Color(0xFF1976D2),
+                        iconSize = cardIconSize,
+                        textSize = cardTextSize,
+                        onClick = { mostrarDialogoCerrarSesion = true }
                     )
-                }
-            }
 
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Card para borrar cuenta
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 20.dp),
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = Color.White
-                ),
-                elevation = CardDefaults.cardElevation(
-                    defaultElevation = 8.dp
-                ),
-                onClick = { mostrarDialogoBorrarCuenta = true }
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Delete,
-                        contentDescription = "Borrar Cuenta",
-                        tint = Color(0xFFD32F2F),
-                        modifier = Modifier.size(32.dp)
-                    )
-                    Spacer(modifier = Modifier.width(16.dp))
-                    Text(
+                    // Card para borrar cuenta
+                    ProfileActionCard(
+                        modifier = Modifier.weight(1f),
+                        icon = Icons.Default.Delete,
                         text = "Borrar Cuenta",
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Medium
+                        iconColor = Color(0xFFD32F2F),
+                        iconSize = cardIconSize,
+                        textSize = cardTextSize,
+                        onClick = { mostrarDialogoBorrarCuenta = true }
+                    )
+                }
+            } else {
+                // Layout vertical para móviles y tablets en portrait
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    // Card para cerrar sesión
+                    ProfileActionCard(
+                        modifier = Modifier.fillMaxWidth(),
+                        icon = Icons.Default.ExitToApp,
+                        text = "Cerrar Sesión",
+                        iconColor = Color(0xFF1976D2),
+                        iconSize = cardIconSize,
+                        textSize = cardTextSize,
+                        cardPadding = cardPadding,
+                        onClick = { mostrarDialogoCerrarSesion = true }
+                    )
+
+                    // Card para borrar cuenta
+                    ProfileActionCard(
+                        modifier = Modifier.fillMaxWidth(),
+                        icon = Icons.Default.Delete,
+                        text = "Borrar Cuenta",
+                        iconColor = Color(0xFFD32F2F),
+                        iconSize = cardIconSize,
+                        textSize = cardTextSize,
+                        cardPadding = cardPadding,
+                        onClick = { mostrarDialogoBorrarCuenta = true }
                     )
                 }
             }
 
+            // Mensaje de error adaptativo
             if (mensajeError.isNotEmpty()) {
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(
                     text = mensajeError,
                     color = Color.Red,
-                    fontSize = 14.sp,
-                    modifier = Modifier.fillMaxWidth(),
+                    fontSize = if (isTablet) 16.sp else 14.sp,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 8.dp),
                     textAlign = TextAlign.Center
                 )
             }
 
+            // Loading indicator adaptativo
             if (isLoading) {
                 Spacer(modifier = Modifier.height(24.dp))
                 CircularProgressIndicator(
                     color = Color.White,
-                    modifier = Modifier.size(40.dp)
+                    modifier = Modifier.size(if (isTablet) 48.dp else 40.dp)
                 )
             }
-
         }
-        mostrarNavegador(navController,"Perfil")
+
+        // Navegador con posición adaptativa
+        mostrarNavegador(navController, "Perfil")
     }
+
+    // Diálogos adaptativos
+    ProfileDialogs(
+        mostrarDialogoCerrarSesion = mostrarDialogoCerrarSesion,
+        mostrarDialogoBorrarCuenta = mostrarDialogoBorrarCuenta,
+        onDismissCerrarSesion = { mostrarDialogoCerrarSesion = false },
+        onDismissBorrarCuenta = { mostrarDialogoBorrarCuenta = false },
+        onConfirmCerrarSesion = {
+            mostrarDialogoCerrarSesion = false
+            cerrarSesion(contexto, navController)
+        },
+        onConfirmBorrarCuenta = {
+            mostrarDialogoBorrarCuenta = false
+            isLoading = true
+            borrarCuenta(
+                contexto = contexto,
+                navController = navController,
+                actualizarMensaje = { mensaje ->
+                    mensajeError = mensaje
+                    isLoading = false
+                }
+            )
+        },
+        isTablet = isTablet
+    )
+}
+
+@Composable
+private fun ProfileActionCard(
+    modifier: Modifier = Modifier,
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    text: String,
+    iconColor: Color,
+    iconSize: Dp = 32.dp,
+    textSize: androidx.compose.ui.unit.TextUnit = 18.sp,
+    cardPadding: Dp = 20.dp,
+    onClick: () -> Unit
+) {
+    Card(
+        modifier = modifier.padding(horizontal = cardPadding),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+        onClick = onClick
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = text,
+                tint = iconColor,
+                modifier = Modifier.size(iconSize)
+            )
+            Spacer(modifier = Modifier.width(16.dp))
+            Text(
+                text = text,
+                fontSize = textSize,
+                fontWeight = FontWeight.Medium,
+                modifier = Modifier.weight(1f)
+            )
+        }
+    }
+}
+
+@Composable
+private fun ProfileDialogs(
+    mostrarDialogoCerrarSesion: Boolean,
+    mostrarDialogoBorrarCuenta: Boolean,
+    onDismissCerrarSesion: () -> Unit,
+    onDismissBorrarCuenta: () -> Unit,
+    onConfirmCerrarSesion: () -> Unit,
+    onConfirmBorrarCuenta: () -> Unit,
+    isTablet: Boolean
+) {
+    val dialogTextSize = if (isTablet) 18.sp else 16.sp
+    val dialogTitleSize = if (isTablet) 22.sp else 20.sp
 
     // Diálogo para confirmar cierre de sesión
     if (mostrarDialogoCerrarSesion) {
         AlertDialog(
-            onDismissRequest = { mostrarDialogoCerrarSesion = false },
-            title = { Text("Cerrar Sesión") },
-            text = { Text("¿Estás seguro de que deseas cerrar sesión?") },
+            onDismissRequest = onDismissCerrarSesion,
+            title = {
+                Text(
+                    "Cerrar Sesión",
+                    fontSize = dialogTitleSize
+                )
+            },
+            text = {
+                Text(
+                    "¿Estás seguro de que deseas cerrar sesión?",
+                    fontSize = dialogTextSize
+                )
+            },
             confirmButton = {
                 Button(
-                    onClick = {
-                        mostrarDialogoCerrarSesion = false
-                        cerrarSesion(contexto, navController)
-                    },
+                    onClick = onConfirmCerrarSesion,
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color(0xFF1976D2)
                     )
                 ) {
-                    Text("Confirmar")
+                    Text(
+                        "Confirmar",
+                        fontSize = if (isTablet) 16.sp else 14.sp
+                    )
                 }
             },
             dismissButton = {
-                OutlinedButton(
-                    onClick = { mostrarDialogoCerrarSesion = false }
-                ) {
-                    Text("Cancelar")
+                OutlinedButton(onClick = onDismissCerrarSesion) {
+                    Text(
+                        "Cancelar",
+                        fontSize = if (isTablet) 16.sp else 14.sp
+                    )
                 }
             }
         )
@@ -216,37 +374,38 @@ fun mostrarPerfil(navController: NavController) {
     // Diálogo para confirmar borrado de cuenta
     if (mostrarDialogoBorrarCuenta) {
         AlertDialog(
-            onDismissRequest = { mostrarDialogoBorrarCuenta = false },
-            title = { Text("Borrar Cuenta") },
+            onDismissRequest = onDismissBorrarCuenta,
+            title = {
+                Text(
+                    "Borrar Cuenta",
+                    fontSize = dialogTitleSize
+                )
+            },
             text = {
-                Text("¿Estás seguro de que deseas borrar tu cuenta? Esta acción no se puede deshacer y perderás todos tus datos.")
+                Text(
+                    "¿Estás seguro de que deseas borrar tu cuenta? Esta acción no se puede deshacer y perderás todos tus datos.",
+                    fontSize = dialogTextSize
+                )
             },
             confirmButton = {
                 Button(
-                    onClick = {
-                        mostrarDialogoBorrarCuenta = false
-                        isLoading = true
-                        borrarCuenta(
-                            contexto = contexto,
-                            navController = navController,
-                            actualizarMensaje = { mensaje ->
-                                mensajeError = mensaje
-                                isLoading = false
-                            }
-                        )
-                    },
+                    onClick = onConfirmBorrarCuenta,
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color(0xFFD32F2F)
                     )
                 ) {
-                    Text("Borrar Cuenta")
+                    Text(
+                        "Borrar Cuenta",
+                        fontSize = if (isTablet) 16.sp else 14.sp
+                    )
                 }
             },
             dismissButton = {
-                OutlinedButton(
-                    onClick = { mostrarDialogoBorrarCuenta = false }
-                ) {
-                    Text("Cancelar")
+                OutlinedButton(onClick = onDismissBorrarCuenta) {
+                    Text(
+                        "Cancelar",
+                        fontSize = if (isTablet) 16.sp else 14.sp
+                    )
                 }
             }
         )
