@@ -114,9 +114,13 @@ class RutinaState {
                 try {
                     val diasSemana = listOf("Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo")
 
+                    // Crear una estructura temporal para organizar por día y posición
+                    val ejerciciosPorDia = mutableMapOf<Int, MutableList<Pair<Int, Ejercicio>>>()
+
                     for (document in documents) {
                         val ejercicioData = document.data
                         val dia = ejercicioData["dia"] as? String ?: continue
+                        val posicion = (ejercicioData["posicion"] as? Long)?.toInt() ?: 0
                         val diaIndex = diasSemana.indexOf(dia)
 
                         if (diaIndex != -1) {
@@ -128,7 +132,26 @@ class RutinaState {
                                 videoRes = (ejercicioData["videoRes"] as Long).toInt(),
                                 documentId = document.id // Guardamos el ID del documento para futuras operaciones
                             )
-                            rutina[diaIndex].add(nuevoEjercicio)
+
+                            // Añadir a la estructura temporal
+                            if (!ejerciciosPorDia.containsKey(diaIndex)) {
+                                ejerciciosPorDia[diaIndex] = mutableListOf()
+                            }
+                            ejerciciosPorDia[diaIndex]!!.add(Pair(posicion, nuevoEjercicio))
+                        }
+                    }
+
+                    // Ahora organizar por posición y añadir a rutina
+                    for ((diaIndex, ejerciciosDelDia) in ejerciciosPorDia) {
+                        // Ordenar por posición
+                        val ejerciciosOrdenados = ejerciciosDelDia.sortedBy { it.first }
+
+                        // Limpiar el día actual
+                        rutina[diaIndex].clear()
+
+                        // Añadir ejercicios en orden
+                        for ((_, ejercicio) in ejerciciosOrdenados) {
+                            rutina[diaIndex].add(ejercicio)
                         }
                     }
 
@@ -147,7 +170,7 @@ class RutinaState {
     }
 
     // Función para guardar un ejercicio en Firebase
-    fun guardarEjercicioEnBD(contexto: Context, diaIndex: Int, ejercicio: Ejercicio, onComplete: (Boolean, String) -> Unit) {
+    fun guardarEjercicioEnBD(contexto: Context, diaIndex: Int, ejercicio: Ejercicio, posicion: Int, onComplete: (Boolean, String) -> Unit) {
         // Asegurarnos de que tengamos el userEmail actual
         if (userEmail.isEmpty()) {
             inicializarUserEmail(contexto)
@@ -166,6 +189,7 @@ class RutinaState {
         val ejercicioMap = hashMapOf(
             "userEmail" to userEmail,  // Usamos el email del usuario en lugar del ID
             "dia" to dia,
+            "posicion" to posicion,  // NUEVO: Guardamos la posición
             "titulo" to ejercicio.titulo,
             "descripcion" to ejercicio.descripcion,
             "imagenRes" to ejercicio.imagenRes,
@@ -176,7 +200,7 @@ class RutinaState {
         db.collection("rutina_semanal")
             .add(ejercicioMap)
             .addOnSuccessListener { documentReference ->
-                Log.d("RutinaState", "Ejercicio guardado con ID: ${documentReference.id} para el usuario $userEmail")
+                Log.d("RutinaState", "Ejercicio guardado con ID: ${documentReference.id} para el usuario $userEmail en posición $posicion")
                 onComplete(true, documentReference.id)
             }
             .addOnFailureListener { e ->
@@ -186,7 +210,7 @@ class RutinaState {
     }
 
     // Función para actualizar un ejercicio en Firebase
-    fun actualizarEjercicioEnBD(contexto: Context, ejercicio: Ejercicio, onComplete: (Boolean) -> Unit) {
+    fun actualizarEjercicioEnBD(contexto: Context, ejercicio: Ejercicio, diaIndex: Int, posicion: Int, onComplete: (Boolean) -> Unit) {
         // Verificar que tengamos userEmail
         if (userEmail.isEmpty()) {
             inicializarUserEmail(contexto)
@@ -205,9 +229,14 @@ class RutinaState {
             return
         }
 
+        val diasSemana = listOf("Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo")
+        val dia = diasSemana[diaIndex]
+
         // Crear un mapa con los datos actualizados
         val ejercicioMap = hashMapOf(
             "userEmail" to userEmail,  // Mantenemos el mismo email
+            "dia" to dia,
+            "posicion" to posicion,  // NUEVO: Actualizamos también la posición
             "titulo" to ejercicio.titulo,
             "descripcion" to ejercicio.descripcion,
             "imagenRes" to ejercicio.imagenRes,
@@ -219,7 +248,7 @@ class RutinaState {
             .document(ejercicio.documentId!!)
             .update(ejercicioMap as Map<String, Any>)
             .addOnSuccessListener {
-                Log.d("RutinaState", "Ejercicio actualizado correctamente para el usuario $userEmail")
+                Log.d("RutinaState", "Ejercicio actualizado correctamente para el usuario $userEmail en posición $posicion")
                 onComplete(true)
             }
             .addOnFailureListener { e ->

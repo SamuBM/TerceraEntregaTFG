@@ -1,5 +1,6 @@
 package com.example.tfg.pantallas
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -16,41 +17,33 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.tfg.R
 import kotlinx.coroutines.delay
 
+@SuppressLint("SuspiciousIndentation")
 @Composable
 fun mostrarEjercicios(navController: NavController) {
     var isLoading by remember { mutableStateOf(true) }
     val gradientColors = listOf(Color(0xFFB0BEC5), Color(0xFFECEFF1))
 
-    LaunchedEffect(Unit) {
-        delay(2000)
-        isLoading = false
-    }
-
-    if (isLoading) {
-        Column(
-            modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            CircularProgressIndicator()
-        }
-    } else {
         Box(modifier = Modifier.fillMaxSize().background(Brush.verticalGradient(gradientColors))) {
             Column(modifier = Modifier.fillMaxSize().padding(bottom = 150.dp, top = 20.dp)) {
 
                 // 🏷 TÍTULO DE LA PANTALLA
                 Text(
                     text = "EJERCICIOS",
-                    style = MaterialTheme.typography.headlineSmall,
-                    modifier = Modifier
-                        .padding(16.dp).fillMaxWidth(),
-                    textAlign = TextAlign.Center
+                    style = MaterialTheme.typography.headlineMedium.copy(
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 28.sp
+                    ),
+                    color = Color(0xFF1976D2),
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth()
                 )
 
                 LazyColumn(
@@ -101,7 +94,7 @@ fun mostrarEjercicios(navController: NavController) {
             // ⛵ Navegador flotante sobre el contenido
             mostrarNavegador(navController, "Ejercicios")
         }
-    }
+
 }
 
 

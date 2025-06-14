@@ -12,6 +12,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -109,9 +110,10 @@ fun mostrarHistorial(navController: NavController) {
                     for (document in documents) {
                         val item = document.data
 
-                        // Parsear fecha
+                        // CORRECCIÓN: Manejar correctamente la conversión de Timestamp
                         val timestamp = item["fecha"] as? com.google.firebase.Timestamp ?: continue
-                        val fecha = timestamp.toDate()
+                        // Convertir el timestamp a la zona horaria local
+                        val fecha = Date(timestamp.seconds * 1000 + timestamp.nanoseconds / 1000000)
 
                         // Crear objeto SesionEntrenamiento
                         val sesion = SesionEntrenamiento(
@@ -164,12 +166,13 @@ fun mostrarHistorial(navController: NavController) {
         val tiempoTotalEjercicioSegundos = tiempoEjercicio * ejerciciosTotales
         val tiempoTotalDescansoSegundos = tiempoDescanso * (ejerciciosTotales - 1).coerceAtLeast(0)
 
-        // Crear documento para Firebase
+        // Crear documento para Firebase - usar Timestamp de Firebase
+        val ahora = com.google.firebase.Timestamp.now()
         val nuevaSesion = hashMapOf(
             "userEmail" to userEmail,
             "userId" to userId,
             "tipoEntrenamiento" to tipoEntrenamiento,
-            "fecha" to Date(), // Fecha actual
+            "fecha" to ahora, // Usar Firebase Timestamp
             "ejerciciosTotales" to ejerciciosTotales,
             "tiempoTotalEjercicioSegundos" to tiempoTotalEjercicioSegundos,
             "tiempoTotalDescansoSegundos" to tiempoTotalDescansoSegundos,
@@ -241,10 +244,11 @@ fun mostrarHistorial(navController: NavController) {
         ) {
             // Título
             Text(
-                text = "Historial de Entrenamientos",
+                text = "HISTORIAL ENTRENAMIENTOS",
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(bottom = 16.dp)
+                modifier = Modifier.padding(bottom = 16.dp).fillMaxWidth(),
+                textAlign = TextAlign.Center
             )
 
             // Mostrar error si existe
@@ -292,7 +296,7 @@ fun mostrarHistorial(navController: NavController) {
             } else {
                 // Lista de sesiones
                 LazyColumn(
-                    modifier = Modifier.weight(1f).padding(bottom = 25.dp),
+                    modifier = Modifier.weight(1f).padding(bottom = 20.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     items(sesiones) { sesion ->
@@ -352,6 +356,12 @@ fun mostrarHistorial(navController: NavController) {
 
 @Composable
 fun TarjetaSesion(sesion: SesionEntrenamiento) {
+    // CORRECCIÓN: Sumar 2 horas a la fecha para corregir el desfase
+    val calendar = Calendar.getInstance()
+    calendar.time = sesion.fecha
+    calendar.add(Calendar.HOUR_OF_DAY, 2) // Sumar 2 horas
+    val fechaCorregida = calendar.time
+
     val formatoFecha = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
     val formatoHora = SimpleDateFormat("HH:mm", Locale.getDefault())
 
@@ -368,7 +378,7 @@ fun TarjetaSesion(sesion: SesionEntrenamiento) {
     }
 
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
         shape = RoundedCornerShape(12.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
         colors = CardDefaults.cardColors(containerColor = colorFondo)
@@ -397,12 +407,12 @@ fun TarjetaSesion(sesion: SesionEntrenamiento) {
 
                 Column(horizontalAlignment = Alignment.End) {
                     Text(
-                        text = formatoFecha.format(sesion.fecha),
+                        text = formatoFecha.format(fechaCorregida),
                         fontWeight = FontWeight.Bold,
                         fontSize = 16.sp
                     )
                     Text(
-                        text = formatoHora.format(sesion.fecha),
+                        text = formatoHora.format(fechaCorregida),
                         fontSize = 14.sp,
                         color = Color.Gray
                     )

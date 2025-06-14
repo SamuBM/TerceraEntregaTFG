@@ -1,5 +1,6 @@
 package com.example.tfg.pantallas
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -9,11 +10,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.compose.ui.text.style.TextAlign
+import com.example.tfg.R
 
 @Composable
 fun mostrarPantallaTiempo(navController: NavController) {
@@ -43,6 +47,12 @@ fun mostrarPantallaTiempo(navController: NavController) {
 
     val gradientColors = listOf(Color(0xFFB0BEC5), Color(0xFFECEFF1))
     Box(modifier = Modifier.fillMaxSize().background(Brush.verticalGradient(gradientColors))){
+        Image(
+            painter = painterResource(id = R.drawable.fondomovil), // Asegúrate de tener esta imagen en res/drawable
+            contentDescription = null,
+            contentScale = ContentScale.Crop,
+            modifier = Modifier.fillMaxSize()
+        )
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
@@ -50,15 +60,23 @@ fun mostrarPantallaTiempo(navController: NavController) {
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             item {
-                Text(
-                    text = "Entrenar",
-                    fontSize = 28.sp,
-                    fontWeight = FontWeight.Bold,
-                    textAlign = TextAlign.Center,
+
+                Card(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(top = 40.dp)
-                )
+                        .padding(start = 16.dp, end = 16.dp, top = 60.dp),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFF64B5F6))
+                ){
+                    Text(
+                        text = "Entrenar",
+                        fontSize = 28.sp,
+                        fontWeight = FontWeight.Bold,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier
+                            .fillMaxWidth().padding(vertical = 10.dp)
+                    )
+                }
 
                 Card(
                     modifier = Modifier

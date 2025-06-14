@@ -3,11 +3,11 @@ package com.example.tfg.pantallas
 import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -19,6 +19,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -32,6 +33,7 @@ fun mostrarEjerciciosParaElegir(navController: NavController, rutinaState: Rutin
     var isProcessing by remember { mutableStateOf(false) } // Estado para controlar operaciones en curso
     val contexto = LocalContext.current
     val gradientColors = listOf(Color(0xFFB0BEC5), Color(0xFFECEFF1))
+
     LaunchedEffect(Unit) {
         delay(1000) // Simulamos carga de datos
         isLoading = false
@@ -55,36 +57,33 @@ fun mostrarEjerciciosParaElegir(navController: NavController, rutinaState: Rutin
             }
         } else {
             // Pantalla con los ejercicios
-            Column(modifier = Modifier.fillMaxSize()) {
-                // Título de la pantalla
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp)
-                        .padding(top = 32.dp), // Separa el título de la parte superior
-                    contentAlignment = Alignment.Center
-                ) {
+            Box(modifier = Modifier.fillMaxSize().padding(start = 16.dp, end = 16.dp, top = 40.dp, bottom = 20.dp)) {
+
+                Row {
                     Text(
                         text = "Selecciona un Ejercicio",
                         style = MaterialTheme.typography.headlineMedium.copy(
                             fontWeight = FontWeight.Bold,
                             fontSize = 28.sp
                         ),
-                        color = Color(0xFF1976D2)
+                        color = Color(0xFF1976D2),
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth()
                     )
                 }
 
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(horizontal = 16.dp)
-                        .padding(bottom = 120.dp) // Espacio para el botón "Volver"
+                LazyVerticalGrid(
+                    columns = GridCells.Fixed(2),
+                    contentPadding = PaddingValues(16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                    modifier = Modifier.padding(bottom = 80.dp, top = 50.dp)
                 ) {
                     items(ejerciciosList) { ejercicio ->
-                        // Cada fila de ejercicio
-                        Row(
+                        Card(
                             modifier = Modifier
                                 .fillMaxWidth()
+                                .height(180.dp)
                                 .clickable {
                                     // Verifica que la posición seleccionada no sea null
                                     rutinaState.ultimaPosicionSeleccionada?.let { (dia, index) ->
@@ -110,7 +109,7 @@ fun mostrarEjerciciosParaElegir(navController: NavController, rutinaState: Rutin
 
                                             // Actualizar en Firebase y luego en la lista local
                                             try {
-                                                rutinaState.actualizarEjercicioEnBD(contexto, nuevoEjercicio) { exito ->
+                                                rutinaState.actualizarEjercicioEnBD(contexto, nuevoEjercicio, dia, index) { exito ->
                                                     if (exito) {
                                                         // Actualizamos la lista local
                                                         rutinaState.rutina[dia][index] = nuevoEjercicio
@@ -148,7 +147,7 @@ fun mostrarEjerciciosParaElegir(navController: NavController, rutinaState: Rutin
 
                                             // Guardar en Firebase y luego actualizar con el ID en la lista local
                                             try {
-                                                rutinaState.guardarEjercicioEnBD(contexto, dia, nuevoEjercicio) { exito, documentId ->
+                                                rutinaState.guardarEjercicioEnBD(contexto, dia, nuevoEjercicio, index) { exito, documentId ->
                                                     if (exito && documentId.isNotEmpty()) {
                                                         // Crear nuevo ejercicio con el ID del documento asignado por Firebase
                                                         val ejercicioConId = Ejercicio(
@@ -195,52 +194,42 @@ fun mostrarEjerciciosParaElegir(navController: NavController, rutinaState: Rutin
                                         // Si la posición es null, regresa sin hacer cambios
                                         navController.popBackStack()
                                     }
-                                }
-                                .padding(8.dp)
-                                .background(Color.White, shape = RoundedCornerShape(12.dp))
-                                .border(2.dp, Color.LightGray, shape = RoundedCornerShape(12.dp)),
-                            verticalAlignment = Alignment.CenterVertically
+                                },
+                            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+                            shape = RoundedCornerShape(12.dp),
+                            colors = CardDefaults.cardColors(containerColor = Color(0xFF64B5F6))
                         ) {
-                            Image(
-                                painter = painterResource(id = ejercicio.imagenRes),
-                                contentDescription = ejercicio.titulo,
-                                modifier = Modifier
-                                    .size(80.dp)
-                                    .clip(RoundedCornerShape(8.dp))
-                                    .padding(5.dp), // Padding por todos lados, no solo start
-                                contentScale = ContentScale.Fit // Muestra la imagen completa
-                            )
-                            Spacer(modifier = Modifier.width(16.dp))
-                            Text(
-                                text = ejercicio.titulo,
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
+                            Column {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(120.dp)
+                                ) {
+                                    Image(
+                                        painter = painterResource(id = ejercicio.imagenRes),
+                                        contentDescription = ejercicio.titulo,
+                                        contentScale = ContentScale.Fit,  // Cambiamos de Crop a Fit
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .padding(4.dp)  // Añadimos padding para mejorar la apariencia
+                                            .clip(RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp))
+                                    )
+                                }
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .background(MaterialTheme.colorScheme.surface)
+                                        .padding(8.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = ejercicio.titulo,
+                                        textAlign = TextAlign.Center,
+                                        style = MaterialTheme.typography.bodyMedium
+                                    )
+                                }
+                            }
                         }
-                        Spacer(modifier = Modifier.height(12.dp)) // Espacio entre ejercicios
-                    }
-                }
-
-                // Botón de "Volver"
-                Box(
-                    modifier = Modifier
-                        .padding(bottom = 16.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Button(
-                        onClick = { navController.popBackStack() },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp)
-                            .height(48.dp),
-                        shape = RoundedCornerShape(16.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
-                    ) {
-                        Text(
-                            text = "Volver",
-                            fontSize = 16.sp,
-                            color = Color.White
-                        )
                     }
                 }
             }

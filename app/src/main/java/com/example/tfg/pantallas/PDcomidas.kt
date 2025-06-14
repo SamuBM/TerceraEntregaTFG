@@ -32,7 +32,7 @@ fun mostrarInfoComida(navController: NavController, index: Int) {
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
-                .padding(top = 45.dp, start = 16.dp, end = 16.dp)
+                .padding(top = 45.dp, start = 16.dp, end = 16.dp, bottom = 45.dp)
         ) {
             Spacer(modifier = Modifier.height(20.dp))
 

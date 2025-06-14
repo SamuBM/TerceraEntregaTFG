@@ -1,6 +1,7 @@
 package com.example.tfg.pantallas
 
 import android.content.Context
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -14,10 +15,13 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.paint
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
@@ -25,6 +29,7 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.example.tfg.R
 import com.google.firebase.firestore.FirebaseFirestore
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -79,14 +84,14 @@ fun mostrarLogIn(navController: NavController) {
                 modifier = Modifier
                     .size(logoSize)
                     .clip(RoundedCornerShape(logoSize / 2))
-                    .background(Color.White.copy(alpha = 0.9f)),
+                    .background(Color.White),
                 contentAlignment = Alignment.Center
             ) {
-                Text(
-                    text = "LOGO",
-                    fontSize = if (isSmallScreen) 14.sp else 20.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color(0xFF1976D2)
+                Image(
+                    painter = painterResource(id = R.drawable.logofitmate),
+                    contentDescription = null,
+                    modifier = Modifier.size(logoSize * 0.85f), // 60% del tamaño del contenedor
+                    contentScale = ContentScale.Fit
                 )
             }
 

@@ -44,16 +44,13 @@ import org.checkerframework.common.subtyping.qual.Bottom
 @Composable
 fun mostrarHome(navController: NavController) {
     Box(modifier = Modifier.fillMaxSize()) {
-        Box(modifier = Modifier
-            .fillMaxWidth()
-            .height(30.dp)
-            .background(Color.DarkGray))
+
         // Fondo con imagen de pantalla completa
         Image(
             painter = painterResource(id = R.drawable.fondomovil), // Asegúrate de tener esta imagen en res/drawable
             contentDescription = null,
             contentScale = ContentScale.Crop,
-            modifier = Modifier.fillMaxSize().padding(top = 30.dp)
+            modifier = Modifier.fillMaxSize()
         )
 
         // Contenido existente
