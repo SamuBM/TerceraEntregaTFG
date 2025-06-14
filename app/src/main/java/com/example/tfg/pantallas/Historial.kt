@@ -359,7 +359,6 @@ fun TarjetaSesion(sesion: SesionEntrenamiento) {
     // CORRECCIÓN: Sumar 2 horas a la fecha para corregir el desfase
     val calendar = Calendar.getInstance()
     calendar.time = sesion.fecha
-    calendar.add(Calendar.HOUR_OF_DAY, 2) // Sumar 2 horas
     val fechaCorregida = calendar.time
 
     val formatoFecha = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
